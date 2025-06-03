@@ -29,13 +29,15 @@ var app = (function () {
 
   // Bug : Sometimes musics stops appearing in suggestions, it seems that musics dissapears at the end of the array
   // Adding empty string makes them unfindable and prevent this bug
-  musicNameList = musicNameList.concat(
-    new Array(musicNameList.length).fill({
+  function updateMusicList(){
+    const newItems = new Array(musicNameList.length).fill({
       id: -1,
       fr: "",
       tags: allTags,
-    })
-  );
+    });
+    musicNameList.push(...newItems);
+  }
+  updateMusicList();
 
   var musicListWithLinks = window.musicListWithLinks;
   
