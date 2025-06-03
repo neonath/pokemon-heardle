@@ -24,52 +24,7 @@ var app = (function () {
   }
 
   // You can remove the attributes "tags" if you set allTags to []
-  var musicNameList = [
-    {
-      id: 0,
-      fr: "Titre - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 1,
-      fr: "Introduction - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 2,
-      fr: "À la poursuite de Skull Kid - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 3,
-      fr: "Caverne - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 4,
-      fr: "Thème de Majora - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 5,
-      fr: "Tour de l'Horloge - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 6,
-      fr: "Vendeur de Masques - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 7,
-      fr: "Bourg-Clocher (1er jour) - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 8,
-      fr: "Fontaine des Fées - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 9,
-      fr: "Réunion chez le Maire Dotour - The Legend of Zelda: Majora’s Mask"
-    },
-    {
-      id: 10,
-      fr: "Milk Bar - The Legend of Zelda: Majora’s Mask"
-    },
-  ];
+  const musicNameList = window.musicNameList;
   let filteredMusicNameList = [];
 
   // Bug : Sometimes musics stops appearing in suggestions, it seems that musics dissapears at the end of the array
@@ -82,53 +37,8 @@ var app = (function () {
     })
   );
 
-  var musicListWithLinks = [
-    {
-      url: "https://soundcloud.com/christian-w-154682372/01-title-theme?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 0,
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/02-opening?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 1
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/03-chase?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 2
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/04-cavern?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 3
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/05-majoras-theme?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 4
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/06-clock-tower?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 5
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/07-happy-mask-salesmans-theme?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 6
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/08-clock-town-first-day?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 7
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/09-fairys-fountain?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 8
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/10-mayors-meeting?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 9
-    },
-    {
-      url: "https://soundcloud.com/christian-w-154682372/11-milk-bar?in=user-529993930/sets/majoras-mask-ost&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
-      answer: 10
-    },
-           
-  ];
+  var musicListWithLinks = window.musicListWithLinks;
+  
   shuffleMusic();
   let filteredMusicListWithLinks = [];
   filterMusicLists();
