@@ -12,6 +12,40 @@ var app = (function () {
       language = found;
     }
   }
+
+  var scapi = document.createElement("script");
+  scapi.src = "https://w.soundcloud.com/player/api.js";
+  document.head.appendChild(scapi);
+
+  function waitAndRegister() {
+    window.setTimeout(function () {
+      if (typeof SC == "undefined") {
+        waitAndRegister();
+      } else {
+        quiet();
+      }
+    }, 100);
+  }
+  waitAndRegister();
+
+  function quiet() {
+    var scWidgets = document.querySelectorAll(
+      'iframe[src^="https://w.soundcloud.com/player"]'
+    );
+    if (scWidgets.length > 0) {
+      for (var i = 0; i < scWidgets.length; ++i) {
+        var widget = SC.Widget(scWidgets[i]);
+        widget.bind(SC.Widget.Events.PLAY, function () {});
+      }
+    }
+    const player = document.getElementById("player");
+    const volumeSlider = document.getElementById("volume-slider");
+    volumeSlider.addEventListener("input", () => {
+      player.volume = volumeSlider.value;
+      widget.setVolume(player.volume * 100);
+    });
+  }
+  
   let removeGames = [];
   if (localStorage.getItem("removeGames")) {
     removeGames = JSON.parse(localStorage.getItem("removeGames"));
