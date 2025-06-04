@@ -225,7 +225,6 @@ var app = (function () {
     document.body.innerHTML = "";
     document.body.appendChild(volumeSlider.cloneNode(true));
     document.body.appendChild(playerS.cloneNode(true));
-    document.body.appendChild(blitzS.cloneNode(true));
   }
 
   function nextMusic() {
