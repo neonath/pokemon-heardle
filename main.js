@@ -1,17 +1,16 @@
+/* global SC */
 var app = (function () {
-  var artist = "Video Game";
+  var artist = "Video Games";
   var currentIndex = 0;
-  var zipUrl =
-    ""; // Set to '' if you don't want to allow download of the zip
-  const languages = ["fr"];
-  let language = "fr";
+  const languages = ["fr", "en"];
+  let language = "en";
   if (navigator.languages && navigator.languages.length > 0) {
     const startLanguage = navigator.languages[0].substring(0, 2);
-    const found = languages.find((a) => a == startLanguage);
-    if (found) {
-      language = found;
+    if (languages.includes(startLanguage)) {
+      language = startLanguage;
     }
   }
+  
 
   var scapi = document.createElement("script");
   scapi.src = "https://w.soundcloud.com/player/api.js";
@@ -46,136 +45,67 @@ var app = (function () {
     });
   }
   
-  let removeGames = [];
-  if (localStorage.getItem("removeGames")) {
-    removeGames = JSON.parse(localStorage.getItem("removeGames"));
-  }
-  // Set to [] if you don't want to use the tag system
-  const allTags = [];
-  let removeTags = [];
-  if (localStorage.getItem("removeTags")) {
-    removeTags = JSON.parse(localStorage.getItem("removeTags"));
-  }
+  let removeGames = JSON.parse(localStorage.getItem("removeGames") || "[]");
 
-  // You can remove the attributes "tags" if you set allTags to []
-  const musicNameList = window.musicNameList;
   let filteredMusicNameList = [];
 
-  // Bug : Sometimes musics stops appearing in suggestions, it seems that musics dissapears at the end of the array
-  // Adding empty string makes them unfindable and prevent this bug
-  function updateMusicList(){
+  const musicNameList = window.musicNameList;
+
+  function updateMusicList() {
     const newItems = new Array(musicNameList.length).fill({
       id: -1,
+      en: "",
       fr: "",
-      tags: allTags,
     });
     musicNameList.push(...newItems);
   }
+
   updateMusicList();
 
-  var musicListWithLinks = window.musicListWithLinks;
-  
+  const musicListWithLinks = window.musicListWithLinks;
+
   shuffleMusic();
   let filteredMusicListWithLinks = [];
   filterMusicLists();
   var firstLoad = true;
+     
+ 
 
-  // Translation Constants
   const flags = {
     fr: "https://cdn.glitch.global/689a1d86-ffe0-4981-a89f-b548a3ccd61a/1f1eb-1f1f7.png",
-  }; // Name of the file used for the flag
-  const flagsAlt = {
-    fr: {
-      en: "French Flag",
-      fr: "Drapeau français",
-    }
-  }; // Alt text for accessibility
-  // Tags
-  tagsT = {
-    Battles: {
-      en: "Battles",
-      fr: "Combats",
-    },
-    Buildings: {
-      en: "Buildings",
-      fr: "Bâtiments",
-    },
-    Characters: {
-      en: "Character Themes",
-      fr: "Thèmes de personnage",
-    },
-    Cities: {
-      en: "Cities",
-      fr: "Villes",
-    },
-    Encounters: {
-      en: "Encounters",
-      fr: "Rencontres",
-    },
-    Menu: {
-      en: "Menu",
-      fr: "Menu",
-    },
-    "Mini Games": {
-      en: "Minigames",
-      fr: "Mini-Jeux",
-    },
-    "Outdoor Location": {
-      en: "Outdoor Location",
-      fr: "Lieux extérieurs",
-    },
-    "Repetable Events": {
-      en: "Repetable Events",
-      fr: "Évenements répétable",
-    },
-    "Story Events": {
-      en: "Story Events",
-      fr: "Évenements d'histoire",
-    },
-    Victories: {
-      en: "Victories",
-      fr: "Victoires",
-    },
+    en: "https://cdn.glitch.global/689a1d86-ffe0-4981-a89f-b548a3ccd61a/1f1fa-1f1f8.png",
   };
-  //// About popup
-  const aboutT = { fr: "A propos", en: "About" };
+
+  const aboutT = { fr: "A propos", en: "about" };
   const aboutPopupT = {
-    fr:
-      '<p class="mb-3">Un clone de <a href="https://www.heardle.app/" title="Heardle">Heardle</a>, et du <a href="https://heardle-kpop.glitch.me/" title="K-Pop Heardle">K-Pop Heardle</a> qui peut être joué à l\'infini et avec les musiques de ' +
-      artist +
-      '. Basé sur le code de <a href="https://joywave-heardle.glitch.me/" title="Joywave Heardle">Joywave Heardle</a> et sur les musiques du <a href="https://pkmn-heardle.glitch.me/" title="Pokémon Heardle">Pokémon Heardle</a>.</p> \n\n<p class="mb-3">Chaque musique est choisie au hasard dans la bande originale du jeu ' +
-      artist +
-      '.</p><p class="mb-3">Les musiques sont répertoriées avec le nom des jeux dans lesquels elles figurent. Vous pouvez effectuer une recherche par noms de versions appariées, comme "Rouge/Bleu" ou "Rubis/Saphir". Les musiques des remakes sont incluses, comme Rouge Feu et Vert Feuille ou Diamant Étincelant et Perle Scintillante.</p><p class="mb-3">La liste des musiques provient de vgmdb (qui utilise les albums officiels) quand c\'est possible, sinon de datamining (Concerne Ultra Soleil/Ultra Lune et Diamant Étincelant/Perle Scintillante). Les noms français des musiques proviennent des listes officiels sur iTunes pour les jeux GBA et DS et pour Pokémon X/Y. Pour les autres jeux, les traductions sont déduites à partir des jeux déjà traduits ou sont traduites à la main à partir des noms anglais. N\'hésitez pas à me proposer de meilleures traductions pour Pokémon Soleil/Lune, Épée/Bouclier, Légende: Arceus, ou Écarlate/Violet !</p> \n\n\n\n <p class="mb-3">Vous voulez créer votre propre Heardle Infinie ? Consultez le fichier <a href="https://glitch.com/edit/#!/pkmn-infinite-heardle?path=README.md">README</a>.</p>' +
-      (zipUrl
-        ? '<p>Vous pouvez télécharger les fichiers pour exécuter le site en local <a href="' +
-          zipUrl +
-          '">ici</a>.</p>'
-        : ""),
+    fr: '<p class="mb-3">Un clone de <a href="https://www.heardle.app/" title="Heardle">Heardle</a>, et du <a href="https://heardle-kpop.glitch.me/" title="K-Pop Heardle">K-Pop Heardle</a> qui peut être joué à l\'infini et avec les musiques de différents jeux. Basé sur le code de <a href="https://joywave-heardle.glitch.me/" title="Joywave Heardle">Joywave Heardle</a> et sur les musiques du <a href="https://pkmn-infinite-heardle.glitch.me/" title="Pokémon Infinite Heardle">Pokémon Infinite Heardle</a> modifié.</p><p class="mb-3">Chaque musique est choisie au hasard dans la bande originale des jeux.</p><p class="mb-3">Les musiques sont répertoriées avec le nom des jeux dans lesquels elles figurent.</p><p class="mb-3">Les noms français des musiques proviennent des listes officiels sur certains jeux, pour les autres jeux, les traductions sont déduites à partir des jeux déjà traduits ou certains jeux sont traduites à la main à partir des noms anglais.</p><p class="mb-3">Streamers attention, certaines musiques sont Copyright.</p><p class="mb-3">Vous voulez créer votre propre Heardle Infinie ? Consultez le fichier <a href="https://glitch.com/edit/#!/pkmn-infinite-heardle?path=README.md">README</a>.</p>',
     en:
       '<p class="mb-3">A clone of <a href="https://www.heardle.app/" title="Heardle">Heardle</a>, and <a href="https://heardle-kpop.glitch.me/" title="K-Pop Heardle">K-Pop Heardle</a> which can be played infinitely and with ' +
       artist +
-      '\'s musics. Based on <a href="https://joywave-heardle.glitch.me/" title="Joywave Heardle">Joywave Heardle</a> code and <a href="https://pkmn-heardle.glitch.me/" title="Pokémon Heardle">Pokémon Heardle</a> musics.</p> \n\n<p class="mb-3">Each music is randomly chosen from mainline ' +
+      '\' musics. Based on <a href="https://joywave-heardle.glitch.me/" title="Joywave Heardle">Joywave Heardle</a> code and <a href="https://pkmn-infinite-heardle.glitch.me/" title="Pokémon Infinite Heardle">Pokémon Infinite Heardle</a> musics edited.</p><p class="mb-3">Each music is randomly chosen from mainline ' +
       artist +
-      '\'s game soundtrack.</p><p class="mb-3">Songs are listed along with the name of the games they are featured in. You can search by paired version names such as "Red/Blue" or "Ruby/Sapphire". Songs from remakes are included, such as FireRed and LeafGreen, and Brilliant Diamond and Shining Pearl. </p><p class="mb-3">The list of music comes from vgmdb (which uses official albums), when possible, otherwise from datamining (Only for Ultra Sun/Ultra Moon and Brilliant Diamond/Shining Pearl)</p> \n\n\n\n <p class="mb-3">Want to make your own Heardle? Check out the <a href="https://glitch.com/edit/#!/pkmn-infinite-heardle?path=README.md">README</a>. </p>' +
-      (zipUrl
-        ? '<p>You can download files to run the website locally <a href="' +
-          zipUrl +
-          '">here</a>.</p>'
-        : ""),
+      '\' soundtrack.</p><p class="mb-3">Songs are listed along with the name of the games they are featured in.</p><p class="mb-3">Streamers, some musics are copyright claimed.</p><p class="mb-3">Want to make your own Heardle? Check out the <a href="https://glitch.com/edit/#!/pkmn-infinite-heardle?path=README.md">README</a>.</p>',
   };
-  //// Support popup
-  const supportT = { fr: "Support", en: "Support" };
+
+  const supportT = { fr: "support", en: "support" };
   const supportPopupT = {
-    fr: 'Vous avez des questions ou trouvez des bugs ? Contactez Beignet0 sur Reddit, beignetSan sur Twitch ou beignet1139 sur Discord ! <br><br>Vous pouvez également jouer au <a href="https://pkmn-heardle.glitch.me/" title="Pokémon Heardle">Pokémon Heardle</a> tous les jours (Ou utiliser cette <a href="https://pkmn-heardle-fix.glitch.me/" title="Pokémon Heardle">version corrigée du Pokémon Heardle</a> si celui ci ne fonctionne pas). Remerciez <a href="http://www.twitter.com/SgtAngel777" target="_blank">@SgtAngel777</a> et <a href="http://www.twitter.com/NickWrightData" target="_blank">@NickWrightData</a> les créateurs du Pokémon Heardle original sur Twitter !<br><br>Il existe également une version pour <a href="https://pkmn-md-infinite-heardle.glitch.me/">Pokémon Donjon Mystère</a> grâce à Ipfil.',
-    en: 'Have questions/run into bugs? DM Beignet0 on Reddit, beignetSan on Twitch or beignet1139 on Discord!<br><br>You can also play <a href="https://pkmn-heardle.glitch.me/" title="Pokémon Heardle">Pokémon Heardle</a> daily (Or use this <a href=“https://pkmn-heardle-fix.glitch.me/” title=“Pokémon Heardle”>fixed version of Pokémon Heardle</a> if it doesn\'t work). Thank the Pokémon Heardle creators on Twitter! <a href="http://www.twitter.com/SgtAngel777" target="_blank">@SgtAngel777</a> and <a href="http://www.twitter.com/NickWrightData" target="_blank">@NickWrightData</a><br><br>There\'s also a version for <a href="https://pkmn-md-infinite-heardle.glitch.me/">Pokémon Mystery Dungeon</a>, thanks to Ipfil.',
-  };
-  //// How to play popup
-  const howToPlayT = { fr: "Comment jouer", en: "How to play" };
-  const howToPlayPopup1T = {
     fr:
-      "Écoutez l'intro, puis trouvez la bonne musique " +
-      artist +
-      " dans la liste",
+      '<p class="mb-3">Vous pouvez jouer au <a href="https://infinitevideogame.glitch.me/" title="Games Heardle">Games Heardle</a> tous les jours!</p><p class="mb-3">Si vous pensez qu\'une musique ou un jeu manque a l\'appel, faites le moi savoir sur <a href="https://twitter.com/Keraloon/" title="@Keraloon">Twitter!</a></p><p class="mb-3">Vous pouvez regarder le Changelog <a href="https://docs.google.com/spreadsheets/d/1OvNR46OelBmRpIpJSVvbYPl9g8ltCBzMJf32RTYyZ0g/edit?usp=sharing" title="Changelog">ici!</a></p><p class="mb-3">Nombre de musiques présentes: ' +
+      filteredMusicListWithLinks.length +
+      "/" +
+      musicListWithLinks.length +
+      "</p>",
+    en:
+      '<p class="mb-3">You can also play <a href="https://infinitevideogame.glitch.me/" title="Games Heardle">Games Heardle</a> daily!</p><p class="mb-3">If you think a music or a game should be here, let me know on <a href="https://twitter.com/Keraloon/" title="@Keraloon">Twitter!</a></p><p class="mb-3">You can look at the Changelog <a href="https://docs.google.com/spreadsheets/d/1OvNR46OelBmRpIpJSVvbYPl9g8ltCBzMJf32RTYyZ0g/edit?usp=sharing" title="Changelog">here!</a></p><p class="mb-3">Number of songs available: ' +
+      filteredMusicListWithLinks.length +
+      "/" +
+      musicListWithLinks.length +
+      "</p>",
+  };
+
+  const howToPlayT = { fr: "Comment jouer", en: "how to play" };
+  const howToPlayPopup1T = {
+    fr: "Écoutez l'intro, puis trouvez la bonne musique dans la liste",
     en:
       "Listen to the intro, then find the correct " +
       artist +
@@ -199,52 +129,29 @@ var app = (function () {
   };
   const playT = { fr: "Jouer", en: "Play" };
   const playedT = { fr: "Jouée", en: "Played" };
-  const playAriaT = { fr: "Lancer/Pauser", en: "Play/Pause" };
   const wonT = { fr: "Trouvée", en: "Won" };
   const winRateT = { fr: "Taux de réussite", en: "Win rate" };
   const currentStreakT = { fr: "Série actuelle", en: "Current Streak" };
   const maxStreakT = { fr: "Série maximum", en: "Max Streak" };
-  //// Stats popup
-  const statsT = { fr: "Stats", en: "Stats" };
-  //// Filter popup
+
+  const statsT = { fr: "stats", en: "stats" };
+
   const filterT = { fr: "Filtrer", en: "Filter" };
   const explainationFilterT = {
     fr: "Les jeux cochés seront sélectionnés. N'oubliez pas de cliquer sur Sauvegarder après avoir fait votre sélection.",
     en: "Games you check will be selected. Don't forget to click Save after making your selection.",
-  };
-  const explainationFilterTagsT = {
-    fr: "Vous pouvez sélectionner les tags ci-dessous pour filtrer les musiques. (BETA)",
-    en: "You can select tags below to filter musics. (BETA)",
   };
   const warningFilterT = {
     fr: "Attention : modifier la liste de jeux disponible réinitialise votre série.",
     en: "Warning: saving will reset your streak.",
   };
   const saveT = { fr: "Sauvegarder", en: "Save" };
-  const saveAriaT = { fr: "Sauvegarder les filtres", en: "Save filters" };
   const selectAllT = { fr: "Tout Sélectionner", en: "Select All" };
   const unselectAllT = { fr: "Tout Désélectionner", en: "Unselect All" };
-  const selectAllGamesT = {
-    fr: "Sélectionner tous les jeux",
-    en: "Select All Games",
-  };
-  const unselectAllGamesT = {
-    fr: "Désélectionner tous les jeux",
-    en: "Unselect All Games",
-  };
-  const selectAllTagsT = {
-    fr: "Sélectionner tous les tags",
-    en: "Select All Tags",
-  };
-  const unselectAllTagsT = {
-    fr: "Désélectionner tous les tags",
-    en: "Unselect All Tags",
-  };
-  //// Music List popup
-  const musicListT = { fr: "Liste des musiques", en: "Music list" };
-  //// Language popup
+
+  const musicListT = { fr: "Liste des musiques", en: "music list" };
   const langListT = { fr: "Langues", en: "Languages" };
-  //// Main frame
+
   const volumeT = {
     fr: "Augmentez le volume et appuyez pour lancer la musique !",
     en: "Turn up the volume and tap to start the track!",
@@ -255,17 +162,16 @@ var app = (function () {
     en: "Know it? Search for the artist / title",
   };
   const nextT = { fr: "Suivant", en: "Next" };
-  const nextAriaT = { fr: "Musique suivant", en: "Next music" };
   const skipT = { fr: "Passer", en: "Skip" };
   const skippedT = { fr: "PASSÉE", en: "SKIPPED" };
   const goodAnswerT = {
-    fr: "Vous avez trouvé cette musique " + artist + " en ",
+    fr: "Vous avez trouvé cette musique en ",
     en: "You got this " + artist + " music within ",
   };
   const secondT = { fr: "seconde", en: "second" };
   const badAnswerT = {
-    fr: "Vous n'avez pas trouvé cette musique " + artist,
-    en: "You didn't get this " + artist + " music.",
+    fr: "Vous n'avez pas trouvé la musique correspondante",
+    en: "You didn't get this music.",
   };
   const errorT = {
     fr: "Une erreur s'est produite lors du chargement de la musique. Veuillez recharger et réessayer.\n Vous pouvez contactez l'administrateur de ce site si le problème persiste.",
@@ -275,33 +181,23 @@ var app = (function () {
     fr: "Chargement ...",
     en: "Loading player",
   };
+
+  const textMessages = {
+    fr: "Ecoutez {title} - {artist} sur SoundCloud",
+    en: "Listen to {artist} - {title} on SoundCloud",
+  };
+
   function listenToT(music) {
-    switch (language) {
-      case "fr":
-        return (
-          "Ecoutez " + music.title + " - " + music.artist + " sur SoundCloud"
-        );
-      case "en":
-        return (
-          "Listen to " + music.artist + " - " + music.title + " on SoundCloud"
-        );
-    }
+    const template = textMessages[language];
+    return template
+      .replace("{title}", music.title)
+      .replace("{artist}", music.artist);
   }
 
   for (let lg of Object.keys(flags)) {
     flags[lg] =
-      '<img style="width:16px;height:16px" src="' +
-      flags[lg] +
-      '" alt="' +
-      flagsAlt[lg][language] +
-      '" />';
+      '<img style="width:16px;height:16px" src="' + flags[lg] + '" alt="" />';
   }
-
-  fetch(zipUrl).then((r) => {
-    if (r.ok == false) {
-      zipUrl = "";
-    }
-  });
 
   const Cn = ue(filteredMusicNameList),
     On = {
@@ -322,82 +218,81 @@ var app = (function () {
     }
   }
 
+  function clearAndUpdateDOM() {
+    const volumeSlider = document.getElementById("volume-slider");
+    const playerS = document.getElementById("player");
+    const blitzS = document.getElementById("access-blitz");
+    document.body.innerHTML = "";
+    document.body.appendChild(volumeSlider.cloneNode(true));
+    document.body.appendChild(playerS.cloneNode(true));
+    document.body.appendChild(blitzS.cloneNode(true));
+  }
+
   function nextMusic() {
     currentIndex += 1;
     if (currentIndex >= filteredMusicListWithLinks.length) {
       window.location.reload();
     } else {
-      document.body.innerHTML = "";
+      clearAndUpdateDOM();
       new (class extends se {
         constructor(e) {
-          super(), re(this, e, jn, En, i, {}, null, [-1, -1]);
+          super();
+          re(this, e, jn, En, i, {}, null, [-1, -1]);
         }
       })({
         target: document.body,
         props: {},
       });
+      quiet();
     }
   }
 
   function filterMusicLists() {
-    // Remove musics that are filtered out
+    // Supprimer les musiques filtrées
     let gameList = [...new Set(getGameOrArtistFromMusicName(musicNameList))];
     let removedGameList = removeGames.map((i) => gameList[i]);
-    let removedTagsList = removeTags.map((i) => allTags[i]);
-    if (gameList.length == removedGameList.length) {
+    if (gameList.length === removedGameList.length) {
       removeGames = [];
       localStorage.setItem("removeGames", "[]");
       removedGameList = [];
     }
-    if (allTags.length == removedTagsList.length) {
-      removeTags = [];
-      localStorage.setItem("removeTags", "[]");
-      removedTagsList = [];
-    }
+
     filteredMusicNameList = musicNameList.filter(
       (m) => !removedGameList.includes(getOneGameOrArtistFromMusic(m))
     );
-    if (allTags.length > 0 && removeTags.length > 0) {
-      filteredMusicNameList = filteredMusicNameList.filter((m) =>
-        m.tags.some((t) => !removedTagsList.includes(t))
-      );
-    }
-    if (filteredMusicNameList.every((m) => m.id == -1)) {
-      filteredMusicNameList = musicNameList;
-      removeGames = [];
-      localStorage.setItem("removeGames", "[]");
-      removeTags = [];
-      localStorage.setItem("removeTags", "[]");
-    }
+
     const idMusic = new Set(filteredMusicNameList.map((x) => x.id));
     filteredMusicListWithLinks = musicListWithLinks.filter((x) =>
       idMusic.has(x.answer)
     );
+
+    // Mettre à jour le DOM
+    clearAndUpdateDOM();
   }
 
   function changeLanguage(code) {
     language = code;
-    document.body.innerHTML = "";
-    localStorage.setItem("language", language),
-      new (class extends se {
-        constructor(e) {
-          super(), re(this, e, jn, En, i, {}, null, [-1, -1]);
-        }
-      })({
-        target: document.body,
-        props: {},
-      });
+    localStorage.setItem("language", language);
+
+    // Mettre à jour le DOM
+    clearAndUpdateDOM();
+
+    new (class extends se {
+      constructor(e) {
+        super();
+        re(this, e, jn, En, i, {}, null, [-1, -1]);
+      }
+    })({
+      target: document.body,
+      props: {},
+    });
+
+    quiet();
   }
 
   function saveFilteredGames(filteredGames) {
     removeGames = filteredGames;
     localStorage.setItem("removeGames", JSON.stringify(filteredGames)),
-      window.location.reload();
-  }
-
-  function saveFilteredTags(filteredTags) {
-    removeTags = filteredTags;
-    localStorage.setItem("removeTags", JSON.stringify(filteredTags)),
       window.location.reload();
   }
 
@@ -768,43 +663,6 @@ var app = (function () {
     let t, n, r, s;
     const i = e[3].default,
       o = c(i, e, e[2], null);
-    let aria = "";
-    // I didn't find how to reuse the names of the popup
-    switch (i[0].name) {
-      case "ge":
-        aria = aboutT[language];
-        break;
-      case "ye":
-        aria = supportT[language];
-        break;
-      case "ve":
-        aria = statsT[language];
-        break;
-      case "we":
-        aria = howToPlayT[language];
-        break;
-      case "mListIco":
-        aria = musicListT[language];
-        break;
-      case "Mt":
-        aria = skipT[language];
-        break;
-      case "$t":
-        aria = submitT[language];
-        break;
-      case "ht":
-        aria = playAriaT[language];
-        break;
-      case "pn":
-        aria = playT[language];
-        break;
-      case "filterIco":
-        aria = filterT[language];
-        break;
-      case "LangIco":
-        aria = langListT[language];
-        break;
-    }
     return {
       c() {
         (t = w("button")),
@@ -814,7 +672,6 @@ var app = (function () {
             "class",
             "px-2 py-2 uppercase tracking-widest bg-custom-mg border-none flex items-center font-semibold text-sm svelte-1r54uzk"
           ),
-          M(t, "aria-label", aria),
           Y(t, "bg-custom-positive", e[0]),
           Y(t, "bg-custom-mg", e[1]);
       },
@@ -1660,20 +1517,26 @@ var app = (function () {
     let t, n, r;
 
     function s(e, t) {
-      return e[0][e[7]].isCorrect || e[0][e[7]].isSkipped
-        ? e[0][e[7]].isSkipped
-          ? Te
-          : void 0
-        : Ye;
+      const song = e[0][e[7]];
+      if (e[0][e[7]].isSkipped) {
+        return Te;
+      } else if (e[0][e[7]].answer.split(" - ")[1] === e[2].artist) {
+        return Yeye;
+      } else {
+        return Ye;
+      }
     }
+
     let i = s(e),
       o = i && i(e);
 
     function a(e, t) {
       return e[0][e[7]].isSkipped ? Oe : Ce;
     }
+
     let l = a(e),
       u = l(e);
+
     return {
       c() {
         (t = w("div")),
@@ -1748,6 +1611,40 @@ var app = (function () {
           M(r, "x2", "18"),
           M(r, "y2", "18"),
           M(t, "class", "text-custom-negative"),
+          M(t, "xmlns", "http://www.w3.org/2000/svg"),
+          M(t, "width", "24"),
+          M(t, "height", "24"),
+          M(t, "viewBox", "0 0 24 24"),
+          M(t, "fill", "none"),
+          M(t, "stroke", "currentColor"),
+          M(t, "stroke-width", "2"),
+          M(t, "stroke-linecap", "round"),
+          M(t, "stroke-linejoin", "round");
+      },
+      m(e, s) {
+        g(e, t, s), p(t, n), p(t, r);
+      },
+      d(e) {
+        e && y(t);
+      },
+    };
+  }
+  function Yeye(e) {
+    let t, n, r;
+    return {
+      c() {
+        (t = k("svg")),
+          (n = k("line")),
+          (r = k("line")),
+          M(n, "x1", "18"),
+          M(n, "y1", "6"),
+          M(n, "x2", "6"),
+          M(n, "y2", "18"),
+          M(r, "x1", "6"),
+          M(r, "y1", "6"),
+          M(r, "x2", "18"),
+          M(r, "y2", "18"),
+          M(t, "class", "text-custom-positive"), // Utilisation de la classe "text-custom-positive" pour la couleur verte
           M(t, "xmlns", "http://www.w3.org/2000/svg"),
           M(t, "width", "24"),
           M(t, "height", "24"),
@@ -2374,7 +2271,7 @@ var app = (function () {
             T(o, "width", (e[15] ? e[16] : "100") + "%"),
             M(i, "class", "h-3 w-full relative overflow-hidden "),
             M(r, "class", "max-w-screen-sm w-full mx-auto px-3 flex-col"),
-            M(n, "class", "border-t border-custom-line"),
+            M(n, "class", "border-t border-custom-line;"),
             M(m, "class", "flex items-center"),
             M(S, "class", "flex justify-center items-center p-1"),
             M(f, "class", "flex justify-between items-center"),
@@ -4044,20 +3941,23 @@ var app = (function () {
       u = A();
 
     function c(e) {
-      "skipped" == e
-        ? (u("guess", {
-            guess: r,
-            isSkipped: !0,
-          }),
-          n(4, (r = "")))
-        : void 0 !== r && "" !== r.trim()
-        ? (u("guess", {
-            guess: r,
-            isSkipped: !1,
-          }),
-          n(4, (r = "")))
-        : l.focus();
+      if ("skipped" === e) {
+        u("guess", {
+          guess: r,
+          isSkipped: true,
+        });
+        n(4, (r = ""));
+      } else if (r.trim() !== "") {
+        u("guess", {
+          guess: r,
+          isSkipped: false,
+        });
+        n(4, (r = ""));
+      } else {
+        l.focus();
+      }
     }
+
     P(() => {
       !(function () {
         const e = new wt({
@@ -4065,7 +3965,8 @@ var app = (function () {
           threshold: 1,
           wrapper: !1,
           resultsList: {
-            maxResults: 10,
+            maxResults: 5000,
+            class: "auto-complete-results",
           },
           diacritics: !0,
           noresults: !0,
@@ -4108,6 +4009,7 @@ var app = (function () {
         });
       })();
     });
+
     return (
       (e.$$set = (e) => {
         s.pop();
@@ -4299,11 +4201,13 @@ var app = (function () {
                   i,
                   "class",
                   "pointer-events-auto modal w-full limit-height mx-auto top-20 relative rounded-sm " +
-                    (e[0] == aboutT[language] || e[0] == filterT[language]
+                    (e[0] == filterT[language]
+                      ? "max-w-screen-custom"
+                      : e[0] == aboutT[language]
                       ? "max-w-screen-sm"
                       : "max-w-screen-xs")
-                ),
-            M(i, "role", "dialog"),
+                );
+          M(i, "role", "dialog"),
             M(i, "aria-modal", "true"),
             M(
               s,
@@ -4506,9 +4410,12 @@ var app = (function () {
       let buttonLang;
       (buttonLang = w(l == language ? "div" : "button")),
         (buttonLang.innerHTML = l.toUpperCase() + flags[l]),
-        M(buttonLang, "style", l == language ? "font-weight:bold;" : ""),
-        M(buttonLang, "class", "lang-choice"),
-        M(buttonLang, "aria-label", l.toUpperCase()),
+        M(
+          buttonLang,
+          "style",
+          "border: none;display: flex;justify-content: center;align-items: center;gap: 4px;" +
+            (l == language ? "font-weight:bold;" : "")
+        ),
         l != language &&
           buttonLang.addEventListener("click", function () {
             changeLanguage(l);
@@ -4545,17 +4452,12 @@ var app = (function () {
     getGameOrArtistFromMusicName(musicNameList).forEach((m) =>
       games.add(m.trim())
     );
-    let explainationGames = w("div");
-    explainationGames.innerHTML = explainationFilterT[language];
+    let explaination = w("div");
+    explaination.innerHTML = explainationFilterT[language];
     let warning = w("div");
     warning.innerHTML = warningFilterT[language];
     let filteredGames = [...removeGames];
-    let filteredTags = [...removeTags];
-    let gridGames = gridFilterDiv(filteredGames, games);
-    let gridTags = gridFilterDiv(
-      filteredTags,
-      allTags.map((t) => tagsT[t][language])
-    );
+    let grid = gridFilterGames(filteredGames, games);
     let save = w("button");
     save.innerHTML = saveT[language];
     M(save, "style", "margin-left: auto;margin-right: auto;");
@@ -4564,123 +4466,51 @@ var app = (function () {
       "class",
       "px-2 py-2 uppercase tracking-widest border-none font-semibold text-sm bg-custom-positive"
     );
-    M(save, "aria-label", saveAriaT[language]);
     save.addEventListener("click", function () {
       saveFilteredGames(filteredGames);
-      saveFilteredTags(filteredTags);
     });
-    let selectAllGames = w("button");
-    selectAllGames.innerHTML = selectAllT[language];
+    let selectAll = w("button");
+    selectAll.innerHTML = selectAllT[language];
     M(
-      selectAllGames,
+      selectAll,
       "style",
       "margin-left: auto;margin-right: auto;margin-top: 15px;"
     );
     M(
-      selectAllGames,
+      selectAll,
       "class",
       "px-2 py-2 tracking-widest border-none font-semibold text-sm bg-custom-mg"
     );
-    M(selectAllGames, "aria-label", selectAllGamesT[language]);
-    selectAllGames.addEventListener("click", function () {
+    selectAll.addEventListener("click", function () {
       removeGames = [];
       filteredGames = [];
-      y(gridGames);
-      y(explainationTags);
-      y(ccTags);
-      y(gridTags);
-      gridGames = gridFilterDiv(filteredGames, games);
-      g(n, gridGames, save);
-      g(n, explainationTags, save);
-      g(n, ccTags, save);
-      g(n, gridTags, save);
+      y(grid);
+      grid = gridFilterGames(filteredGames, games);
+      g(n, grid, save);
     });
-    let unselectAllGames = w("button");
-    unselectAllGames.innerHTML = unselectAllT[language];
+    let unselectAll = w("button");
+    unselectAll.innerHTML = unselectAllT[language];
     M(
-      unselectAllGames,
+      unselectAll,
       "style",
       "margin-left: auto;margin-right: auto;margin-top: 15px;"
     );
     M(
-      unselectAllGames,
+      unselectAll,
       "class",
       "px-2 py-2 tracking-widest border-none font-semibold text-sm bg-custom-mg"
     );
-    M(unselectAllGames, "aria-label", unselectAllGamesT[language]);
-    unselectAllGames.addEventListener("click", function () {
+    unselectAll.addEventListener("click", function () {
       removeGames = [...games].map((_, index) => index);
       filteredGames = [...removeGames];
-      y(gridGames);
-      y(explainationTags);
-      y(ccTags);
-      y(gridTags);
-      gridGames = gridFilterDiv(filteredGames, games);
-      g(n, gridGames, save);
-      g(n, explainationTags, save);
-      g(n, ccTags, save);
-      g(n, gridTags, save);
+      y(grid);
+      grid = gridFilterGames(filteredGames, games);
+      g(n, grid, save);
     });
-    let ccGames = w("div");
-    M(ccGames, "class", "button-container");
-    p(ccGames, selectAllGames);
-    p(ccGames, unselectAllGames);
-    let selectAllTags = w("button");
-    selectAllTags.innerHTML = selectAllT[language];
-    M(
-      selectAllTags,
-      "style",
-      "margin-left: auto;margin-right: auto;margin-top: 15px;"
-    );
-    M(
-      selectAllTags,
-      "class",
-      "px-2 py-2 tracking-widest border-none font-semibold text-sm bg-custom-mg"
-    );
-    M(selectAllTags, "aria-label", selectAllTagsT[language]);
-    selectAllTags.addEventListener("click", function () {
-      removeTags = [];
-      filteredTags = [];
-      y(gridTags);
-      gridTags = gridFilterDiv(
-        filteredTags,
-        allTags.map((t) => tagsT[t][language])
-      );
-      g(n, gridTags, save);
-    });
-    let unselectAllTags = w("button");
-    unselectAllTags.innerHTML = unselectAllT[language];
-    M(
-      unselectAllTags,
-      "style",
-      "margin-left: auto;margin-right: auto;margin-top: 15px;"
-    );
-    M(
-      unselectAllTags,
-      "class",
-      "px-2 py-2 tracking-widest border-none font-semibold text-sm bg-custom-mg"
-    );
-    M(unselectAllTags, "aria-label", unselectAllTagsT[language]);
-    unselectAllTags.addEventListener("click", function () {
-      removeTags = [...allTags].map((_, index) => index);
-      filteredTags = [...removeTags];
-      y(gridTags);
-      gridTags = gridFilterDiv(
-        filteredTags,
-        allTags.map((t) => tagsT[t][language])
-      );
-      g(n, gridTags, save);
-    });
-    let ccTags = w("span");
-    let explainationTags = w("span");
-    if (allTags.length > 0) {
-      ccTags = w("div");
-      M(ccTags, "class", "button-container");
-      p(ccTags, selectAllTags);
-      p(ccTags, unselectAllTags);
-      explainationTags = w("div");
-      explainationTags.innerHTML = explainationFilterTagsT[language];
-    }
+    let cc = w("div");
+    M(cc, "class", "button-container");
+    p(cc, selectAll);
+    p(cc, unselectAll);
     return {
       c() {
         (n = w("div")),
@@ -4689,13 +4519,10 @@ var app = (function () {
       },
       m(e, t) {
         g(e, n, t),
-          p(n, explainationGames),
+          p(n, explaination),
           p(n, warning),
-          p(n, ccGames),
-          p(n, gridGames),
-          p(n, explainationTags),
-          p(n, ccTags),
-          p(n, gridTags),
+          p(n, cc),
+          p(n, grid),
           p(n, save);
       },
       p: e,
@@ -4707,10 +4534,10 @@ var app = (function () {
     };
   }
 
-  function gridFilterDiv(filteredList, checkableList) {
+  function gridFilterGames(filteredGames, games) {
     let grid = w("div");
     M(grid, "class", "filter-form");
-    [...checkableList].forEach((g, index) => {
+    [...games].forEach((g, index) => {
       let checkbox;
       let checkboxInput;
       let checkboxLabel;
@@ -4718,7 +4545,7 @@ var app = (function () {
         (checkboxInput = w("input")),
         (checkboxInput.id = g),
         (checkboxInput.name = g),
-        (checkboxInput.checked = !filteredList.includes(index)),
+        (checkboxInput.checked = !filteredGames.includes(index)),
         (checkboxInput.type = "checkbox"),
         (checkboxLabel = w("label")),
         (checkboxLabel.innerHTML = g),
@@ -4728,16 +4555,13 @@ var app = (function () {
         M(checkboxLabel, "style", "display:flex;align-items: center;"),
         M(checkboxLabel, "for", g),
         checkboxInput.addEventListener("click", function () {
-          const find = filteredList.indexOf(index);
+          const find = filteredGames.indexOf(index);
           if (find != -1) {
-            filteredList.splice(find, 1);
+            filteredGames.splice(find, 1);
+            checkbox.style.border = "0.2px inset #444";
           } else {
-            filteredList.push(index);
-          }
-        }),
-        checkboxInput.addEventListener("keypress", function (e) {
-          if (e.key === "Enter") {
-            checkboxInput.click();
+            filteredGames.push(index);
+            checkbox.style.border = "none";
           }
         }),
         p(grid, checkbox);
@@ -4752,34 +4576,34 @@ var app = (function () {
   }
 
   function It(t) {
-    let n, r, s, i;
+    let n,
+      r,
+      s = false,
+      i;
+
     return {
       c() {
-        (n = w("div")),
-          (r = w("a")),
-          // (r.innerHTML =
-          //   '<span class="kofitext svelte-1d3p4dy"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="Ko-fi donations" class="kofiimg mr-2 mb-1 svelte-1d3p4dy"/>Support the Heardle devs on Ko-Fi</span><svg xmlns="http://www.w3.org/2000/svg" class="ml-2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 5l7 7-7 7"></path></svg>'),
-          // M(
-          //   r,
-          //   "class",
-          //   "kofi-button py-2 px-3 rounded-lg items-center flex  svelte-1d3p4dy"
-          // ),
-          // M(r, "href", "https://ko-fi.com/heardle"),
-          // M(r, "title", "Support the Heardle devs on Ko-Fi"),
-          M(
-            n,
-            "class",
-            "text-center flex justify-center items-center flex-col "
-          );
+        n = document.createElement("div");
+        r = document.createElement("a");
+        n.className = "text-center flex justify-center items-center flex-col";
       },
       m(e, o) {
-        g(e, n, o), p(n, r), s || ((i = S(r, "click", t[0])), (s = !0));
+        e.insertBefore(n, o);
+        n.appendChild(r);
+        if (!s) {
+          i = r.addEventListener("click", t[0]);
+          s = true;
+        }
       },
       p: e,
       i: e,
       o: e,
       d(e) {
-        e && y(n), (s = !1), i();
+        if (e) n.remove();
+        if (s) {
+          r.removeEventListener("click", t[0]);
+          s = false;
+        }
       },
     };
   }
@@ -4919,9 +4743,26 @@ var app = (function () {
       }
     );
   }
+
+  function jt(e, t, n) {
+    let r;
+    return (
+      P(async function () {
+        (async function () {
+          const e = await fetch(
+            "https://wjsn-heardle.glitch.me/supporters.json"
+          );
+          return await e.json();
+        })().then((e) => {
+          n(0, (r = e.supporters));
+        });
+      }),
+      [r]
+    );
+  }
   class Bt extends se {
     constructor(e) {
-      super(), re(this, e, null, Et, i, {});
+      super(), re(this, e, jt, Et, i, {});
     }
   }
 
@@ -5131,7 +4972,6 @@ var app = (function () {
               "class",
               "px-2 py-2 uppercase tracking-widest border-none flex items-center font-semibold text-sm svelte-1r54uzk bg-custom-positive"
             ),
-            M(k, "aria-label", nextAriaT[language]),
             k.addEventListener("click", function () {
               nextMusic();
             });
@@ -5489,7 +5329,6 @@ var app = (function () {
   }
 
   function fn(e, t, n) {
-    // console.log("current", t);
     let { userGuesses: r } = t,
       { currentHeardle: s } = t,
       { config: i } = t,
@@ -5528,7 +5367,7 @@ var app = (function () {
             : (t += "🔇");
           for (let e = 0; e < i.maxAttempts; e++)
             r.length > e
-              ? 1 == r[e].isCorrect
+              ? 1 == r[e].isCorrectgues
                 ? (t += "🟩")
                 : 1 == r[e].isSkipped
                 ? (t += "⬛️")
@@ -6169,7 +6008,6 @@ var app = (function () {
         });
     }
   }
-
   var Pn;
   const { document: An, window: Ln } = X;
 
@@ -6436,6 +6274,7 @@ var app = (function () {
         ? 6
         : -1;
     }
+
     return (
       ~(t = a(e)) && (n = o[t] = i[t](e)),
       {
@@ -6756,24 +6595,9 @@ var app = (function () {
         hasFinished: !1,
         hasStarted: !1,
       };
-    // console.log("a", l);
+
     var c, d;
 
-    // EventListener, originnally here to reload the page if the day changed
-    // void 0 !== document.hidden ?
-    //     ((c = "hidden"), (d = "visibilitychange")) :
-    //     void 0 !== document.msHidden ?
-    //     ((c = "msHidden"), (d = "msvisibilitychange")) :
-    //     void 0 !== document.webkitHidden &&
-    //     ((c = "webkitHidden"), (d = "webkitvisibilitychange")),
-    //     void 0 === document.addEventListener ||
-    //     void 0 === c ||
-    //     document.addEventListener(
-    //         d,
-    //         function() {
-    //             document[c] || a === currentIndex || location.reload(!0);
-    //         }, !1
-    //     );
     let h,
       f,
       m = 0;
