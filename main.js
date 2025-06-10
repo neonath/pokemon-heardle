@@ -1,6 +1,6 @@
 /* global SC */
 var app = (function () {
-  var artist = "Video Games";
+  var artist = "Minuit-Jeux";
   var currentIndex = 0;
   const languages = ["fr", "en"];
   let language = "en";
