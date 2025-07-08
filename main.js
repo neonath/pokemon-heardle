@@ -1,6 +1,6 @@
 /* global SC */
 var app = (function () {
-  var artist = "Minuit-Jeux";
+  var artist = "Pokemon";
   var currentIndex = 0;
   const languages = ["fr", "en"];
   let language = "en";
